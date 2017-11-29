@@ -1,7 +1,8 @@
 import os
 
 from flask import (
-    render_template, render_template_string, redirect, url_for, request)
+    render_template, render_template_string, redirect, url_for, request,
+    session)
 from sqlalchemy.sql.expression import union_all
 from sqlalchemy import distinct
 
@@ -12,6 +13,23 @@ from CTFd.models import db, Teams, Solves, Awards, Challenges
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
 
+class TeamScoreVisibility(db.Model):
+
+    """Team visibility on scoreboards.
+
+    If `visible` is set to False, the team/user is not displayed on the public
+    scoreboard.
+    """
+
+    id = db.Column(db.Integer, primary_key=True)
+    team = db.Column(db.Integer, db.ForeignKey('teams.id'))
+    visible = db.Column(db.Boolean, default=False)
+
+    def __init__(self, team, visible):
+        self.team = team
+        self.visible = visible
+
+
 def disable_teams():
     """Overwrite the teams template to disable the teams list."""
     teams_template = os.path.join(DIR_PATH, 'templates/teams_disabled.html')
@@ -19,13 +37,15 @@ def disable_teams():
 
 
 def get_standings(category=None, count=None):
-    """Get scoreboard standigs.
+    """Get scoreboard standings.
 
     Optionally filtered by challenge/award `category`, and limited to `count`
     users.
 
     This function was modified from :meth:`CTFd.scoreboard.get_standings`. The
-    `admin` agument was removed and the `category` argument was added.
+    `admin` agument was removed and the `category` argument was added. The
+    `TeamScoreVisibility` model is used to hide teams that don't have
+    visibility set to True.
     """
     scores = (
         db.session.query(
@@ -86,7 +106,9 @@ def get_standings(category=None, count=None):
         )
         .select_from(Teams)
         .join(sumscores, Teams.id == sumscores.columns.teamid)
+        .join(TeamScoreVisibility, Teams.id == TeamScoreVisibility.team)
         .filter(Teams.banned == False)
+        .filter(TeamScoreVisibility.visible == True)
         .order_by(
             sumscores.columns.score.desc(),
             sumscores.columns.id
@@ -105,7 +127,7 @@ def get_standings(category=None, count=None):
 
 
 def get_standings_per_category(count=None):
-    """Get scoreboard standigs per challenge/award category.
+    """Get scoreboard standings per challenge/award category.
 
     Optionally limited to `count` users.
     """
@@ -149,5 +171,63 @@ def scoreboard_by_category(app):
 
 
 def load(app):
+    # Creat tables.
+    app.db.create_all()
+
+    # Disable teams list.
     disable_teams()
+
+    # Display scores per category on scoreboard.
     scoreboard_by_category(app)
+
+    @app.route('/profile/preferences', methods=['GET'])
+    def profile_preferences():
+        """View for displaying profile preferences."""
+        if not utils.authed():
+            return redirect(url_for('auth.login'))
+
+        team_id = session['id']
+
+        if not session.get('nonce'):
+            session['nonce'] = utils.sha512(os.urandom(10))
+
+        visible = (
+            db.session.query(TeamScoreVisibility.visible)
+            .filter_by(team=team_id)
+            .scalar()
+        )
+
+        if visible is None:
+            visible = False
+
+        template = os.path.join(DIR_PATH, 'templates/preferences.html')
+
+        return render_template_string(
+            open(template).read(), nonce=session.get('nonce'), visible=visible,
+            success=False)
+
+    @app.route('/profile/preferences', methods=['POST'])
+    def profile_preferences_submit():
+        """View for submitting profile preferences."""
+        if not utils.authed():
+            return redirect(url_for('auth.login'))
+
+        team_id = session['id']
+        visible = request.form.get('visible') == 'on'
+
+        visibility = TeamScoreVisibility.query.filter_by(team=team_id).first()
+
+        if visibility is None:
+            visibility = TeamScoreVisibility(team_id, visible)
+            db.session.add(visibility)
+        else:
+            visibility.visible = visible
+
+        db.session.commit()
+        db.session.close()
+
+        template = os.path.join(DIR_PATH, 'templates/preferences.html')
+
+        return render_template_string(
+            open(template).read(), nonce=session.get('nonce'), visible=visible,
+            success=True)
