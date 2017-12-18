@@ -1,3 +1,4 @@
+import cgi
 import logging
 import smtplib
 import sys
@@ -60,6 +61,12 @@ class NotifyingChallenge(challenges.CTFdStandardChallenge):
     @staticmethod
     def send_email(text):
         to_address = utils.get_config('challenge_notification_address')
+
+        # Mail is sent using `utils.sendmail`, which currently uses `MIMEText`
+        # to wrap the message, so HTML escaping is not necessary, but we escape
+        # it anyways since this may change if CTFd code is updated.
+        text_escaped = cgi.escape(text)
+
         if to_address is None:
             logger.error(
                 "failed to send email notification because "
@@ -68,7 +75,7 @@ class NotifyingChallenge(challenges.CTFdStandardChallenge):
 
         sent = False
         try:
-            sent = utils.sendmail(to_address, text)
+            sent = utils.sendmail(to_address, text_escaped)
 
         except smtplib.SMTPException:
             logger.exception(
@@ -134,9 +141,10 @@ class NotifyingChallenge(challenges.CTFdStandardChallenge):
         provided_key = request.form['key'].strip()
         solve = Solves(teamid=team.id, chalid=chal.id,
                        ip=utils.get_ip(req=request), flag=provided_key)
+
         db.session.add(solve)
-        cls.send_notification(solve)
         db.session.commit()
+        cls.send_notification(solve)
         db.session.close()
 
     @classmethod
@@ -144,7 +152,8 @@ class NotifyingChallenge(challenges.CTFdStandardChallenge):
         provided_key = request.form['key'].strip()
         wrong = WrongKeys(teamid=team.id, chalid=chal.id,
                           ip=utils.get_ip(request), flag=provided_key)
+
         db.session.add(wrong)
-        cls.send_notification(wrong)
         db.session.commit()
+        cls.send_notification(wrong)
         db.session.close()
