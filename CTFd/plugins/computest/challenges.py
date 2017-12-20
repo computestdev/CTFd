@@ -12,14 +12,14 @@ from CTFd.plugins.computest.models import NotifyingChallenges
 
 MAIL_TEMPLATE_SOLVED = """Hello,
 
-User {team.name} (id: {team.id}) just solved challenge {challenge.name} of category {challenge.category} with key '{flag}'.
+User {team.name} (id: {team.id}) just SOLVED challenge {challenge.name} of category {challenge.category} with key '{flag}'.
 
 Regards,
 Computest Challenges
 """
 MAIL_TEMPLATE_FAILED = """Hello,
 
-User {team.name} (id: {team.id}) just failed challenge {challenge.name} of category {challenge.category} with key '{flag}'.
+User {team.name} (id: {team.id}) just FAILED challenge {challenge.name} of category {challenge.category} with key '{flag}'.
 
 Regards,
 Computest Challenges
