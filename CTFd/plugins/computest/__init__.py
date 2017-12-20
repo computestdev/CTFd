@@ -2,7 +2,7 @@ from CTFd import plugins
 
 from CTFd.plugins.computest.challenges import NotifyingChallenge
 from CTFd.plugins.computest.views import (
-    disable_teams, scoreboard_by_category, define_routes)
+    disable_teams, scoreboard_by_category, define_routes, modify_routes)
 
 
 def load(app):
@@ -22,3 +22,6 @@ def load(app):
 
     # Add custom routes.
     define_routes(app)
+
+    # Modify existing routes.
+    modify_routes(app)

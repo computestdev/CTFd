@@ -2,12 +2,12 @@ import os
 
 from flask import (
     render_template, render_template_string, redirect, url_for, request,
-    session)
+    session, abort)
 
 from sqlalchemy.sql.expression import union_all
 from sqlalchemy import distinct
 
-from CTFd import utils
+from CTFd import utils, views
 from CTFd.models import db, Teams, Solves, Awards, Challenges
 
 from CTFd.plugins.computest.models import TeamScoreVisibility
@@ -154,6 +154,18 @@ def scoreboard_by_category(app):
 
     # Overwrite the view
     app.view_functions['scoreboard.scoreboard_view'] = scoreboard_view
+
+
+def team(teamid):
+    # Don't allow viewing of other teams.
+    if teamid != session.get('id'):
+        abort(404)
+
+    return views.team(teamid)
+
+
+def modify_routes(app):
+    app.view_functions['views.team'] = team
 
 
 def define_routes(app):
