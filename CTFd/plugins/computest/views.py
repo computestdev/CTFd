@@ -158,7 +158,7 @@ def scoreboard_by_category(app):
 
 def team(teamid):
     # Don't allow viewing of other teams.
-    if teamid != session.get('id'):
+    if not utils.is_admin() and teamid != session.get('id'):
         abort(404)
 
     return views.team(teamid)
