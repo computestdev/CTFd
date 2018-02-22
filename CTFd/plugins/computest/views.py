@@ -22,7 +22,7 @@ def disable_teams():
     utils.override_template('teams.html', open(teams_template).read())
 
 
-def get_standings(category=None, count=None):
+def get_standings(category=None, count=None, show_hidden=False):
     """Get scoreboard standings.
 
     Optionally filtered by challenge/award `category`, and limited to `count`
@@ -58,6 +58,9 @@ def get_standings(category=None, count=None):
     if category:
         scores = scores.filter(Challenges.category == category)
         awards = awards.filter(Awards.category == category)
+
+    if not show_hidden:
+        scores = scores.filter(Challenges.hidden == 0)
 
     # Filter out solves and awards that are before a specific time point.
     freeze = utils.get_config('freeze')
