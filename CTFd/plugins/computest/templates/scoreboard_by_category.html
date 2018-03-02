@@ -48,7 +48,7 @@
                 {% for team in standings %}
                     <tr>
                         <td>{{ loop.index }}</td>
-                        <td><a href="{{ request.script_root }}/team/{{ team.teamid }}">{{ team.name }}</a></td>
+                        <td>{{ team.name }}</td>
                         <td>{{ team.score }}</td>
                     </tr>
                 {% endfor %}
@@ -80,7 +80,7 @@
                     {% for team in teams %}
                         <tr>
                             <td>{{ loop.index }}</td>
-                            <td><a href="{{ request.script_root }}/team/{{ team.teamid }}">{{ team.name }}</a></td>
+                            <td>{{ team.name }}</td>
                             <td>{{ team.score }}</td>
                         </tr>
                     {% endfor %}
