@@ -1,8 +1,8 @@
 import os
 
 from flask import (
-    render_template, render_template_string, redirect, url_for, request,
-    session, abort)
+    render_template, render_template_string, jsonify, redirect, url_for,
+    request, session, abort)
 
 from sqlalchemy.sql.expression import union_all
 from sqlalchemy import distinct
@@ -167,8 +167,68 @@ def team(teamid):
     return views.team(teamid)
 
 
+def topteams(count):
+    """Unmodified copy of :meth:`scoreboard.topteams`.
+
+    This uses the local modified :meth:`get_standings` so that banned and
+    hidden users are not displayed.
+    """
+    json = {'places': {}}
+    if utils.get_config('view_scoreboard_if_authed') and not utils.authed():
+        return redirect(url_for('auth.login', next=request.path))
+    if utils.hide_scores():
+        return jsonify(json)
+
+    if count > 20 or count < 0:
+        count = 10
+
+    standings = get_standings(count=count)
+
+    team_ids = [team.teamid for team in standings]
+
+    solves = Solves.query.filter(Solves.teamid.in_(team_ids))
+    awards = Awards.query.filter(Awards.teamid.in_(team_ids))
+
+    freeze = utils.get_config('freeze')
+
+    if freeze:
+        solves = solves.filter(Solves.date < utils.unix_time_to_utc(freeze))
+        awards = awards.filter(Awards.date < utils.unix_time_to_utc(freeze))
+
+    solves = solves.all()
+    awards = awards.all()
+
+    for i, team in enumerate(team_ids):
+        json['places'][i + 1] = {
+            'id': standings[i].teamid,
+            'name': standings[i].name,
+            'solves': []
+        }
+        for solve in solves:
+            if solve.teamid == team:
+                json['places'][i + 1]['solves'].append({
+                    'chal': solve.chalid,
+                    'team': solve.teamid,
+                    'value': solve.chal.value,
+                    'time': utils.unix_time(solve.date)
+                })
+        for award in awards:
+            if award.teamid == team:
+                json['places'][i + 1]['solves'].append({
+                    'chal': None,
+                    'team': award.teamid,
+                    'value': award.value,
+                    'time': utils.unix_time(award.date)
+                })
+        json['places'][i + 1]['solves'] = sorted(json['places'][i + 1]['solves'], key=lambda k: k['time'])
+
+    return jsonify(json)
+
+
 def modify_routes(app):
+    """Overwrite view functions of existing routes."""
     app.view_functions['views.team'] = team
+    app.view_functions['scoreboard.topteams'] = topteams
 
 
 def define_routes(app):
