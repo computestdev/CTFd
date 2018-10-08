@@ -7,9 +7,20 @@
     </div>
 </div>
 <div class="container main-container">
-  <div class="container main-container">
-    <div class="row">
-      <div id="login-container" class="col-md-6 col-md-offset-3">
+  <div class="row">
+    <div class="col-md-2 col-md-offset-2">
+        <ul class="nav nav-pills nav-stacked">
+            <li role="presentation">
+                <a href="{{ request.script_root }}/profile">Profile</a>
+            </li>
+            <li role="presentation" class="active">
+                <a href="{{ request.script_root }}/profile/preferences">Preferences</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="col-md-6">
+      <div id="login-container">
         {% if success %}
             <div class="alert alert-success alert-dismissable submit-row" role="alert">
                 <strong>Success!</strong>
@@ -28,11 +39,12 @@
               Display my username on scoreboards
             </label>
           </div>
+
           <br>
-          <div class="form-group row">
-            <div class="col-sm-10">
-              <button type="submit" class="btn btn-md btn-primary btn-theme
-                      btn-outlined">Submit</button>
+
+          <div class="row">
+            <div class="submit-row">
+              <button type="submit" id="submit" tabindex="5" class="btn btn-md btn-primary btn-theme btn-outlined pull-right">Submit</button>
             </div>
           </div>
         </form>

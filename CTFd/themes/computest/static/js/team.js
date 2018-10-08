@@ -70,7 +70,7 @@ function keys_percentage_graph() {
             labels: ['Solves', 'Fails'],
             marker: {
                 colors: [
-                    "#AFBC36",
+                    "rgb(0, 209, 64)",
                     "rgb(207, 38, 0)"
                 ]
             },

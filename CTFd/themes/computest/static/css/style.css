@@ -23,15 +23,19 @@ td {
 
 a {
     outline: 0;
-    color: #869C16;
+    color: #b9be32;
 }
 a:focus,
 a:hover {
-    color: #AFBC36;
+    color: #d3d766;
 }
 
 img {
     max-width: 100%;
+}
+
+label {
+    font-weight: 300;
 }
 
 .body-container {
@@ -48,7 +52,7 @@ img {
 }
 
 .navbar > .container {
-    padding-top: 30px;
+    padding: 15px;
 }
 
 .navbar .navbar-brand {
@@ -64,17 +68,33 @@ img {
 }
 
 .navbar-inverse .navbar-nav > li > a {
+    color: #000 !important;
+}
+
+.navbar-inverse .navbar-nav > li > a:hover {
     color: #FFF !important;
 }
 
 .navbar li > a {
-    opacity: 0.5;
     transition: opacity 0.08s ease-in 0s;
     cursor: pointer;
 }
 
-.navbar li > a:hover {
-    opacity: 0.8;
+.navbar-inverse .navbar-toggle {
+    border: none;
+}
+.navbar-inverse .navbar-toggle:focus,
+.navbar-inverse .navbar-toggle:hover {
+    background-color: #b9be32;
+}
+
+.navbar-inverse .navbar-collapse, .navbar-inverse .navbar-form {
+    border: none;
+}
+
+.navbar-collapse {
+    box-shadow: none;
+    padding-left: 25px;
 }
 
 .align-text-to-button {
@@ -93,9 +113,20 @@ img {
     padding-bottom: 100px;
 }
 
-#login-container {
-    padding-left: 70px;
-    padding-right: 70px;
+ul.nav-pills {
+    padding-bottom: 2em;
+}
+.nav-pills > li > a {
+    color: #b9be32;
+    background-color: #fff;
+}
+.nav-pills > li.active > a,
+.nav-pills > li.active > a:focus,
+.nav-pills > li.active > a:hover,
+.nav-pills > li > a:focus,
+.nav-pills > li > a:hover {
+    color: #fff;
+    background-color: #b9be32;
 }
 
 #chal > form{
@@ -155,7 +186,12 @@ table{
     float: left;
 }
 
-.logo{
+.branding-logo {
+    display: block;
+    max-width: 100px;
+}
+
+.logo {
     margin: 0 auto;
     width: 100%;
     max-width: 500px;
@@ -209,7 +245,7 @@ table{
 }
 
 .solved-challenge {
-    background-color: #A0B505 !important;
+    background-color: #b9be32 !important;
 }
 
 .panel-theme {
@@ -225,20 +261,20 @@ table{
 }
 
 .btn-outlined.btn-theme {
-    background: #AFBC36;
-    border: 3px solid #AFBC36;
+    background: #b9be32;
+    border-radius: 3px;
+    border: none;
     color: #FFF;
 }
 
 .btn-outlined.btn-theme:hover,
 .btn-outlined.btn-theme:active {
     color: #FFF;
-    background: #869C16;
-    border-color: #869C16;
+    background: #e28c45;
 }
 
 .navbar-inverse {
-    background: #3A3E3D;
+    background: #b9be32;
     border: medium none;
     margin-bottom: 0px;
 }
@@ -254,8 +290,11 @@ table{
     margin-bottom: 0px;
 }
 
-.home h1 {
-    font-size: 48px !important;
+@media screen and (min-width:768px) {
+ .jumbotron .h1,
+ .jumbotron h1 {
+  font-size: 48px
+ }
 }
 
 .navbar {
@@ -294,12 +333,11 @@ table{
     position: relative;
     display: block;
     float: right;
-    padding: 0.8em;
+    padding: 0.6em;
     width: 60%;
     border: none;
     border-radius: 0;
     background: #f0f0f0;
-    color: #aaa;
     font-weight: 400;
     font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
     -webkit-appearance: none; /* for box shadows to show on iOS */
@@ -307,31 +345,6 @@ table{
 
 .input-field:focus {
     outline: none;
-}
-
-.input-label {
-    display: inline-block;
-    float: right;
-    width: 40%;
-    color: #6a7989;
-    font-weight: bold;
-    font-size: 100%;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    margin: 0 0 0 0 !important;
-}
-
-.label-content {
-    position: relative;
-    display: block;
-    padding: 1.6em 0;
-    width: 100%;
 }
 
 .graphic {
@@ -355,18 +368,25 @@ table{
 }
 
 .input-label {
-    width: 100%;
-    text-align: left;
-    position: absolute;
     bottom: 100%;
-    pointer-events: none;
+    display: inline-block;
+    float: right;
+    font-size: 100%;
+    font-weight: 300;
+    margin: 0 0 0 0 !important;
     overflow: hidden;
+    position: absolute;
+    text-align: left;
+    user-select: none;
+    width: 100%;
 }
 
 .label-content {
-    color: #8B8C8B;
+    position: relative;
+    display: block;
+    padding: 1.6em 0;
+    width: 100%;
     padding: 0.25em 0;
-    -webkit-transition: -webkit-transform 0.3s;
     transition: transform 0.3s;
 }
 
@@ -387,7 +407,7 @@ table{
 .input-field:focus + .input-field,
 .input--filled .input-field {
     background-color: transparent;
-    border-color: #A0B505;
+    border-color: #b9be32;
 }
 
 .input--hide {
