@@ -1,8 +1,15 @@
-
 html, body, .container {
     height: 100% !important;
     font-family: 'Open Sans', sans-serif;
     font-size: 1em;
+}
+
+* {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -11,10 +18,11 @@ h1, h2, h3, h4, h5, h6 {
 
 h1 {
     color: #AFBC36;
+    margin-bottom: 1em;
 }
 
-h1, h2 {
-    letter-spacing: 2px;
+h2 {
+    padding: 0.5em 0 0.1em;
 }
 
 td {
@@ -142,23 +150,27 @@ ul.nav-pills {
     text-align: left;
 }
 
-table{
+table {
     width: 100%;
 }
 
-#challenges button{
+#challenges button {
     margin: 8px;
 }
 
-.row > h1{
+.challenge-button h5 {
+    font-size: 1em;
+}
+
+.row > h1 {
     text-align: center;
 }
 
-#challenges{
+#challenges {
     line-height: 66px;
 }
 
-#score-graph{
+#score-graph {
     height: 450px;
     display: block;
     clear: both;
@@ -176,12 +188,12 @@ table{
     opacity: 0.5;
 }
 
-#keys-pie-graph{
+#keys-pie-graph {
     width: 50%;
     float: left;
 }
 
-#categories-pie-graph{
+#categories-pie-graph {
     width: 50%;
     float: left;
 }
@@ -291,10 +303,12 @@ table{
 }
 
 @media screen and (min-width:768px) {
- .jumbotron .h1,
- .jumbotron h1 {
-  font-size: 48px
- }
+    .jumbotron .h1,
+    .jumbotron h1 {
+        font-size: 48px;
+        margin-top: 20px;
+        margin-bottom: 0;
+    }
 }
 
 .navbar {
