@@ -1,328 +1,219 @@
 import os
 
 from flask import (
-    render_template, render_template_string, jsonify, redirect, url_for,
-    request, session, abort)
+    abort,
+    current_app as app,
+    jsonify,
+    redirect,
+    render_template,
+    render_template_string,
+    request,
+    session,
+    url_for,
+)
 
-from sqlalchemy.sql.expression import union_all
-from sqlalchemy import distinct
+from CTFd import utils, teams, users
+from CTFd.models import db, Solves, Awards
+from CTFd.utils import config
+from CTFd.utils.plugins import override_template
+from CTFd.utils.decorators import admins_only, authed_only
+from CTFd.utils.decorators.visibility import check_score_visibility
+from CTFd.utils.user import get_current_user, get_current_team, is_admin
+from CTFd.utils.helpers import get_errors
 
-from CTFd import utils, views
-from CTFd.models import db, Teams, Solves, Awards, Challenges
-
-from CTFd.plugins.computest.models import TeamScoreVisibility
+from CTFd.plugins.computest.utils import get_standings, get_standings_per_category
+from CTFd.plugins.computest.models import AccountScoreVisibility
 
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
 
-def disable_teams():
-    """Overwrite the teams template to disable the teams list."""
-    teams_template = os.path.join(DIR_PATH, 'templates/teams_disabled.html')
-    utils.override_template('teams.html', open(teams_template).read())
+@check_score_visibility
+def scoreboard_listing():
+    """Render scores per category on scoreboard."""
+    standings = get_standings()
+    standings_per_category = get_standings_per_category()
+    template = os.path.join(
+        DIR_PATH, 'templates/scoreboard_by_category.html')
+
+    return render_template_string(
+        open(template).read(),
+        standings=standings,
+        standings_per_category=standings_per_category,
+        score_frozen=config.is_scoreboard_frozen())
 
 
-def get_standings(category=None, count=None, show_hidden=False):
-    """Get scoreboard standings.
-
-    Optionally filtered by challenge/award `category`, and limited to `count`
-    users.
-
-    This function was modified from :meth:`CTFd.scoreboard.get_standings`. The
-    `admin` agument was removed and the `category` argument was added. The
-    `TeamScoreVisibility` model is used to hide teams that don't have
-    visibility set to True.
-    """
-    scores = (
-        db.session.query(
-            Solves.teamid.label('teamid'),
-            db.func.sum(Challenges.value).label('score'),
-            db.func.max(Solves.id).label('id'),
-            db.func.max(Solves.date).label('date')
-        )
-        .select_from(Solves)
-        .join(Challenges, Challenges.id == Solves.chalid)
-        .group_by(Solves.teamid)
-    )
-
-    awards = (db.session.query(
-            Awards.teamid.label('teamid'),
-            db.func.sum(Awards.value).label('score'),
-            db.func.max(Awards.id).label('id'),
-            db.func.max(Awards.date).label('date')
-        )
-        .select_from(Awards)
-        .group_by(Awards.teamid)
-    )
-
-    if category:
-        scores = scores.filter(Challenges.category == category)
-        awards = awards.filter(Awards.category == category)
-
-    if not show_hidden:
-        scores = scores.filter(Challenges.hidden == 0)
-
-    # Filter out solves and awards that are before a specific time point.
-    freeze = utils.get_config('freeze')
-    if freeze:
-        scores = scores.filter(Solves.date < utils.unix_time_to_utc(freeze))
-        awards = awards.filter(Awards.date < utils.unix_time_to_utc(freeze))
-
-    # Combine awards and solves with a union. They should have the same amount
-    # of columns
-    results = union_all(scores, awards).alias('results')
-
-    # Sum each of the results by the team id to get their score.
-    sumscores = db.session.query(
-        results.columns.teamid.label('teamid'),
-        db.func.sum(results.columns.score).label('score'),
-        db.func.max(results.columns.id).label('id'),
-        db.func.max(results.columns.date).label('date')
-    ).group_by(
-        results.columns.teamid
-    ).subquery()
-
-    # Filters out banned and hidden users.
-    # Properly resolves value ties by ID.
-    #
-    # Different databases treat time precision differently so resolve by the
-    # row ID instead.
-    standings_query = (
-        db.session.query(
-            Teams.id.label('teamid'),
-            Teams.name.label('name'),
-            sumscores.columns.score
-        )
-        .select_from(Teams)
-        .join(sumscores, Teams.id == sumscores.columns.teamid)
-        .join(TeamScoreVisibility, Teams.id == TeamScoreVisibility.team)
-        .filter(Teams.banned == False)
-        .filter(TeamScoreVisibility.visible == True)
-        .order_by(
-            sumscores.columns.score.desc(),
-            sumscores.columns.id
-        )
-    )
-
-    # Only select a certain amount of users if asked.
-    if count is None:
-        standings = standings_query.all()
-    else:
-        standings = standings_query.limit(count).all()
-
-    db.session.close()
-
-    return standings
-
-
-def get_standings_per_category(count=None):
-    """Get scoreboard standings per challenge/award category.
-
-    Optionally limited to `count` users.
-    """
-    categories = db.session.query(
-        distinct(Challenges.category).label('category')
-    )
-
-    scores = {}
-    for (category,) in categories:
-        scores[category] = get_standings(category, count)
-
-    db.session.close()
-
-    return scores
-
-
-def scoreboard_by_category(app):
-    """Overwrite the scoreboard template to group by category."""
-    def scoreboard_view():
-        if utils.get_config('view_scoreboard_if_authed') and not utils.authed():
-            return redirect(url_for('auth.login', next=request.path))
-
-        if utils.hide_scores():
-            return render_template(
-                'scoreboard.html',
-                errors=['Scores are currently hidden'])
-
-        standings = get_standings()
-        standings_per_category = get_standings_per_category()
-        template = os.path.join(
-            DIR_PATH, 'templates/scoreboard_by_category.html')
-
-        return render_template_string(
-            open(template).read(),
-            standings=standings,
-            standings_per_category=standings_per_category,
-            score_frozen=utils.is_scoreboard_frozen())
-
-    # Overwrite the view
-    app.view_functions['scoreboard.scoreboard_view'] = scoreboard_view
-
-
-def team(teamid):
-    # Don't allow viewing of other teams.
-    if not utils.is_admin() and teamid != session.get('id'):
+def teams_listing():
+    """Restrict viewing of team listing to admin."""
+    if not is_admin():
         abort(404)
 
-    return views.team(teamid)
+    return teams.listing()
 
 
-def topteams(count):
-    """Unmodified copy of :meth:`scoreboard.topteams`.
+def teams_public(team_id):
+    """Restrict viewing of public team page to admin or owner."""
+    current_team = get_current_team()
+    if not is_admin() and team_id != current_team.id:
+        abort(404)
+
+    return teams.public(team_id)
+
+
+def users_listing():
+    """Restrict viewing of user listing to admin."""
+    if not is_admin():
+        abort(404)
+
+    return users.listing()
+
+
+def users_public(user_id):
+    """Restrict viewing of public user page to admin or owner."""
+    current_user = get_current_user()
+    if not is_admin() and user_id != current_user.id:
+        abort(404)
+
+    return users.public(user_id)
+
+
+class ScoreboardList:
+    """Unmodified copy of :meth:`api.v1.scoreboard.ScoreboardList`.
 
     This uses the local modified :meth:`get_standings` so that banned and
     hidden users are not displayed.
     """
-    json = {'places': {}}
-    if utils.get_config('view_scoreboard_if_authed') and not utils.authed():
-        return redirect(url_for('auth.login', next=request.path))
-    if utils.hide_scores():
-        return jsonify(json)
-
-    if count > 20 or count < 0:
-        count = 10
-
-    standings = get_standings(count=count)
-
-    team_ids = [team.teamid for team in standings]
-
-    solves = Solves.query.filter(Solves.teamid.in_(team_ids))
-    awards = Awards.query.filter(Awards.teamid.in_(team_ids))
-
-    freeze = utils.get_config('freeze')
-
-    if freeze:
-        solves = solves.filter(Solves.date < utils.unix_time_to_utc(freeze))
-        awards = awards.filter(Awards.date < utils.unix_time_to_utc(freeze))
-
-    solves = solves.all()
-    awards = awards.all()
-
-    for i, team in enumerate(team_ids):
-        json['places'][i + 1] = {
-            'id': standings[i].teamid,
-            'name': standings[i].name,
-            'solves': []
-        }
-        for solve in solves:
-            if solve.teamid == team:
-                json['places'][i + 1]['solves'].append({
-                    'chal': solve.chalid,
-                    'team': solve.teamid,
-                    'value': solve.chal.value,
-                    'time': utils.unix_time(solve.date)
-                })
-        for award in awards:
-            if award.teamid == team:
-                json['places'][i + 1]['solves'].append({
-                    'chal': None,
-                    'team': award.teamid,
-                    'value': award.value,
-                    'time': utils.unix_time(award.date)
-                })
-        json['places'][i + 1]['solves'] = sorted(json['places'][i + 1]['solves'], key=lambda k: k['time'])
-
-    return jsonify(json)
+    # TODO: Find out how to overwrite API endpoints.
+    # See https://github.com/CTFd/CTFd/issues/1042
 
 
-def modify_routes(app):
-    """Overwrite view functions of existing routes."""
-    app.view_functions['views.team'] = team
-    app.view_functions['scoreboard.topteams'] = topteams
+"""Define custom routes."""
 
 
-def define_routes(app):
-    """Define custom routes."""
+@app.route('/user/preferences', methods=['GET'])
+@authed_only
+def profile_preferences():
+    """View for displaying profile preferences."""
+    if config.is_teams_mode():
+        account_word = 'team'
+        account = get_current_team()
+    else:
+        account_word = 'username'
+        account = get_current_user()
 
-    @app.route('/profile/preferences', methods=['GET'])
-    def profile_preferences():
-        """View for displaying profile preferences."""
-        if not utils.authed():
-            return redirect(url_for('auth.login'))
+    if config.is_teams_mode() and account is None:
+        abort(403)
 
-        team_id = session['id']
+    visible = (
+        db.session.query(AccountScoreVisibility.visible)
+        .filter_by(account_id=account.id)
+        .scalar()
+    )
 
-        if not session.get('nonce'):
-            session['nonce'] = utils.sha512(os.urandom(10))
+    if visible is None:
+        visible = False
 
-        visible = (
-            db.session.query(TeamScoreVisibility.visible)
-            .filter_by(team=team_id)
-            .scalar()
-        )
+    template = os.path.join(DIR_PATH, 'templates/preferences.html')
 
-        if visible is None:
-            visible = False
+    return render_template_string(
+        open(template).read(),
+        nonce=session.get('nonce'),
+        visible=visible,
+        success=False,
+        account=account_word)
 
-        template = os.path.join(DIR_PATH, 'templates/preferences.html')
+@app.route('/user/preferences', methods=['POST'])
+@authed_only
+def profile_preferences_submit():
+    """View for submitting profile preferences."""
+    template = os.path.join(DIR_PATH, 'templates/preferences.html')
+    errors = get_errors()
+    visible = request.form.get('visible') == 'on'
+    current_user = get_current_user()
+    current_team = get_current_team()
 
-        return render_template_string(
-            open(template).read(),
-            nonce=session.get('nonce'),
-            visible=visible,
-            success=False)
+    if config.is_teams_mode():
+        account_word = 'team'
+        account = current_team
+    else:
+        account_word = 'username'
+        account = current_user
 
-    @app.route('/profile/preferences', methods=['POST'])
-    def profile_preferences_submit():
-        """View for submitting profile preferences."""
-        if not utils.authed():
-            return redirect(url_for('auth.login'))
+    if config.is_teams_mode():
+        if current_team is None:
+            abort(403)
 
-        team_id = session['id']
-        visible = request.form.get('visible') == 'on'
+        if current_team.captain_id != current_user.id:
+            errors.append('Only the team captain can change this setting')
 
-        visibility = TeamScoreVisibility.query.filter_by(team=team_id).first()
+            return render_template_string(
+                open(template).read(),
+                nonce=session.get('nonce'),
+                visible=visible,
+                success=False,
+                errors=errors,
+                account=account_word)
 
-        if visibility is None:
-            visibility = TeamScoreVisibility(team_id, visible)
-            db.session.add(visibility)
+    visibility = (
+        AccountScoreVisibility.query
+        .filter_by(account_id=account.id)
+        .first()
+    )
+
+    if visibility is None:
+        if config.is_teams_mode():
+            visibility = AccountScoreVisibility(
+                team_id=account.id,
+                visible=visible)
         else:
-            visibility.visible = visible
+            visibility = AccountScoreVisibility(
+                user_id=account.id,
+                visible=visible)
 
-        db.session.commit()
-        db.session.close()
+        db.session.add(visibility)
+    else:
+        visibility.visible = visible
 
-        template = os.path.join(DIR_PATH, 'templates/preferences.html')
+    db.session.commit()
+    db.session.close()
 
-        return render_template_string(
-            open(template).read(),
-            nonce=session.get('nonce'),
-            visible=visible,
-            success=True)
+    return render_template_string(
+        open(template).read(),
+        nonce=session.get('nonce'),
+        visible=visible,
+        success=True,
+        account=account_word)
 
-    @app.route('/admin/computest', methods=['GET'])
-    @utils.admins_only
-    def admin_computest():
-        """View for displaying admin preferences for the Computest plugin."""
-        if not session.get('nonce'):
-            session['nonce'] = utils.sha512(os.urandom(10))
+@app.route('/admin/computest', methods=['GET'])
+@admins_only
+def admin_computest():
+    """View for displaying admin preferences for the Computest plugin."""
+    challenge_notification_address = utils.get_config(
+        'challenge_notification_address') or ''
 
-        challenge_notification_address = utils.get_config(
-            'challenge_notification_address') or ''
+    template = os.path.join(DIR_PATH, 'templates/admin_computest.html')
 
-        template = os.path.join(DIR_PATH, 'templates/admin_computest.html')
+    return render_template_string(
+        open(template).read(),
+        nonce=session.get('nonce'),
+        challenge_notification_address=challenge_notification_address,
+        success=False)
 
-        return render_template_string(
-            open(template).read(),
-            nonce=session.get('nonce'),
-            challenge_notification_address=challenge_notification_address,
-            success=False)
+@app.route('/admin/computest', methods=['POST'])
+@admins_only
+def admin_computest_submit():
+    """View for submitting admin preferences for the Computest plugin."""
+    utils.set_config(
+        'challenge_notification_address',
+        request.form.get('challenge_notification_address', None))
 
-    @app.route('/admin/computest', methods=['POST'])
-    @utils.admins_only
-    def admin_computest_submit():
-        """View for submitting admin preferences for the Computest plugin."""
-        utils.set_config(
-            'challenge_notification_address',
-            request.form.get('challenge_notification_address', None))
+    challenge_notification_address = utils.get_config(
+        'challenge_notification_address') or ''
 
-        challenge_notification_address = utils.get_config(
-            'challenge_notification_address') or ''
+    template = os.path.join(DIR_PATH, 'templates/admin_computest.html')
 
-        template = os.path.join(DIR_PATH, 'templates/admin_computest.html')
-
-        return render_template_string(
-            open(template).read(),
-            nonce=session.get('nonce'),
-            challenge_notification_address=challenge_notification_address,
-            success=True)
+    return render_template_string(
+        open(template).read(),
+        nonce=session.get('nonce'),
+        challenge_notification_address=challenge_notification_address,
+        success=True)

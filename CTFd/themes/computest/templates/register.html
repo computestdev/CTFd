@@ -4,14 +4,14 @@
 {% endblock %}
 
 {% block content %}
-<div class="jumbotron home">
+<div class="jumbotron">
 	<div class="container">
 		<h1>Register</h1>
 	</div>
 </div>
-<div class="container main-container">
+<div class="container">
 	<div class="row">
-		<div id="login-container" class="col-md-6 col-md-offset-3">
+		<div class="col-md-6 offset-md-3">
 			{% for error in errors %}
 				<div class="alert alert-danger alert-dismissable" role="alert">
 				  <span class="sr-only">Error:</span>
@@ -19,40 +19,33 @@
 				  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
 				</div>
 			{% endfor %}
+
+			<a class="btn btn-secondary btn-lg btn-block" href="{{ url_for('auth.oauth_login') }}">Login with Major League Cyber</a>
+
+			<hr>
+
 			<form method="post" accept-charset="utf-8" autocomplete="off" role="form" class="form-horizontal">
-				<div class="row">
-					<div class="col-md-12">
-						<span class="input">
-						<input class="input-field" type="text" name="name" id="input-10" {% if name %}value="{{ name }}"{% endif %} />
-						<label class="input-label" for="input-10">
-							<span class="label-content" data-content="Team Name">Username</span>
-						</label>
-					</span>
-					</div>
+				<div class="form-group">
+					<label for="name-input">
+						User Name
+					</label>
+					<input class="form-control" type="text" name="name" id="name-input" {% if name %}value="{{ name }}"{% endif %} />
 				</div>
-				<div class="row">
-					<div class="col-md-12">
-						<span class="input">
-						<input class="input-field" type="text" name="email" id="input-10" {% if email %}value="{{ email }}"{% endif %} />
-						<label class="input-label" for="input-10">
-							<span class="label-content" data-content="Email">Email</span>
-						</label>
-					</span>
-					</div>
+				<div class="form-group">
+					<label for="email-input">
+						Email
+					</label>
+					<input class="form-control" type="text" name="email" id="email-input" {% if email %}value="{{ email }}"{% endif %} />
 				</div>
-				<div class="row">
-					<div class="col-md-12">
-						<span class="input">
-						<input class="input-field" type="password" name="password" id="input-10" {% if password %}value="{{ password }}"{% endif %}/>
-						<label class="input-label" for="input-10">
-							<span class="label-content" data-content="Password">Password</span>
-						</label>
-					</span>
-					</div>
+				<div class="form-group">
+					<label for="password-input">
+						Password
+					</label>
+					<input class="form-control" type="password" name="password" id="password-input" {% if password %}value="{{ password }}"{% endif %}/>
 				</div>
-				<div class="done-row row">
-					<div class="col-md-6 col-md-offset-6" style="margin-top:10px">
-						<button type="submit" id="submit" tabindex="5" class="btn btn-md btn-theme btn-outlined pull-right">Submit</button>
+				<div class="row pt-3">
+					<div class="col-md-12">
+						<button type="submit" id="submit" tabindex="5" class="btn btn-md btn-primary btn-outlined float-right">Submit</button>
 					</div>
 				</div>
 				<input type="hidden" name="nonce" value="{{ nonce }}">
@@ -63,10 +56,4 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ request.script_root }}/themes/{{ ctf_theme() }}/static/js/style.js"></script>
-<script>
-	if (window.location.hash == "#frame"){
-		$('.top-bar').hide()
-	}
-</script>
 {% endblock %}

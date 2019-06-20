@@ -1,28 +1,13 @@
+
 html, body, .container {
     height: 100% !important;
-    font-family: 'Open Sans', sans-serif;
-    font-size: 1em;
+    font-family: 'Lato', 'LatoOffline', sans-serif;
 }
 
-* {
-    -webkit-text-size-adjust: 100%;
-    -ms-text-size-adjust: 100%;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-}
-
-h1, h2, h3, h4, h5, h6 {
-    font-weight: 300;
-}
-
-h1 {
-    color: #AFBC36;
-    margin-bottom: 1em;
-}
-
-h2 {
-    padding: 0.5em 0 0.1em;
+h1, h2 {
+    font-family: 'Raleway', 'RalewayOffline', sans-serif;
+    font-weight: 500;
+    letter-spacing: 2px;
 }
 
 td {
@@ -31,19 +16,10 @@ td {
 
 a {
     outline: 0;
-    color: #b9be32;
-}
-a:focus,
-a:hover {
-    color: #d3d766;
 }
 
 img {
     max-width: 100%;
-}
-
-label {
-    font-weight: 300;
 }
 
 .body-container {
@@ -60,7 +36,7 @@ label {
 }
 
 .navbar > .container {
-    padding: 15px;
+    padding-top: 30px;
 }
 
 .navbar .navbar-brand {
@@ -68,41 +44,20 @@ label {
     letter-spacing: -0.04rem;
     line-height: 15px;
     color: #FFF;
-    padding: 0 25px;
-}
-
-.navbar .navbar-brand img {
-    height: 40px;
 }
 
 .navbar-inverse .navbar-nav > li > a {
-    color: #000 !important;
-}
-
-.navbar-inverse .navbar-nav > li > a:hover {
     color: #FFF !important;
 }
 
 .navbar li > a {
+    opacity: 0.5;
     transition: opacity 0.08s ease-in 0s;
     cursor: pointer;
 }
 
-.navbar-inverse .navbar-toggle {
-    border: none;
-}
-.navbar-inverse .navbar-toggle:focus,
-.navbar-inverse .navbar-toggle:hover {
-    background-color: #b9be32;
-}
-
-.navbar-inverse .navbar-collapse, .navbar-inverse .navbar-form {
-    border: none;
-}
-
-.navbar-collapse {
-    box-shadow: none;
-    padding-left: 25px;
+.navbar li > a:hover {
+    opacity: 0.8;
 }
 
 .align-text-to-button {
@@ -121,20 +76,9 @@ label {
     padding-bottom: 100px;
 }
 
-ul.nav-pills {
-    padding-bottom: 2em;
-}
-.nav-pills > li > a {
-    color: #b9be32;
-    background-color: #fff;
-}
-.nav-pills > li.active > a,
-.nav-pills > li.active > a:focus,
-.nav-pills > li.active > a:hover,
-.nav-pills > li > a:focus,
-.nav-pills > li > a:hover {
-    color: #fff;
-    background-color: #b9be32;
+#login-container {
+    padding-left: 70px;
+    padding-right: 70px;
 }
 
 #chal > form{
@@ -150,27 +94,23 @@ ul.nav-pills {
     text-align: left;
 }
 
-table {
+table{
     width: 100%;
 }
 
-#challenges button {
+#challenges button{
     margin: 8px;
 }
 
-.challenge-button h5 {
-    font-size: 1em;
-}
-
-.row > h1 {
+.row > h1{
     text-align: center;
 }
 
-#challenges {
+#challenges{
     line-height: 66px;
 }
 
-#score-graph {
+#score-graph{
     height: 450px;
     display: block;
     clear: both;
@@ -183,27 +123,22 @@ table {
 }
 
 .spinner-error {
-    padding-top: 210px;
+    padding-top: 20vh;
     text-align: center;
     opacity: 0.5;
 }
 
-#keys-pie-graph {
+#keys-pie-graph{
     width: 50%;
     float: left;
 }
 
-#categories-pie-graph {
+#categories-pie-graph{
     width: 50%;
     float: left;
 }
 
-.branding-logo {
-    display: block;
-    max-width: 100px;
-}
-
-.logo {
+.logo{
     margin: 0 auto;
     width: 100%;
     max-width: 500px;
@@ -231,7 +166,7 @@ table {
     white-space: nowrap;
     font-size:14px;
     line-height:20px;
-    font-weight:300;
+    font-weight:700;
     text-transform:uppercase;
     padding:8px 20px;
 }
@@ -244,11 +179,11 @@ table {
 }
 
 .file-wrapper {
-    background-color: #AFBC36;
+    background-color: #5B7290;
 }
 
 .file-wrapper:hover {
-    background-color: #869C16;
+    background-color: #747474;
 }
 
 .theme-background {
@@ -257,7 +192,7 @@ table {
 }
 
 .solved-challenge {
-    background-color: #b9be32 !important;
+    background-color: #8EDC9D !important;
 }
 
 .panel-theme {
@@ -273,26 +208,28 @@ table {
 }
 
 .btn-outlined.btn-theme {
-    background: #b9be32;
-    border-radius: 3px;
-    border: none;
-    color: #FFF;
+    background: none;
+    color: #545454;
+    border-color: #545454;
+    background-image: none;
+    border: 3px solid;
 }
 
 .btn-outlined.btn-theme:hover,
 .btn-outlined.btn-theme:active {
     color: #FFF;
-    background: #e28c45;
+    background: #545454;
+    border-color: #545454;
 }
 
 .navbar-inverse {
-    background: #b9be32;
+    background: none repeat scroll 0% 0% #545454;
     border: medium none;
     margin-bottom: 0px;
 }
 
 .jumbotron {
-    background-color: #3A3E3D;
+    background-color: #545454;
     color: #FFF;
     padding: 0px 0px 25px;
 }
@@ -302,13 +239,8 @@ table {
     margin-bottom: 0px;
 }
 
-@media screen and (min-width:768px) {
-    .jumbotron .h1,
-    .jumbotron h1 {
-        font-size: 48px;
-        margin-top: 20px;
-        margin-bottom: 0;
-    }
+.home h1 {
+    font-size: 48px !important;
 }
 
 .navbar {
@@ -347,11 +279,12 @@ table {
     position: relative;
     display: block;
     float: right;
-    padding: 0.6em;
+    padding: 0.8em;
     width: 60%;
     border: none;
     border-radius: 0;
     background: #f0f0f0;
+    color: #aaa;
     font-weight: 400;
     font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
     -webkit-appearance: none; /* for box shadows to show on iOS */
@@ -359,6 +292,32 @@ table {
 
 .input-field:focus {
     outline: none;
+}
+
+.input-label {
+    display: inline-block;
+    float: right;
+    padding: 0 1em;
+    width: 40%;
+    color: #6a7989;
+    font-weight: bold;
+    font-size: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    margin: 0 0 0 0 !important;
+}
+
+.label-content {
+    position: relative;
+    display: block;
+    padding: 1.6em 0;
+    width: 100%;
 }
 
 .graphic {
@@ -382,25 +341,19 @@ table {
 }
 
 .input-label {
-    bottom: 100%;
-    display: inline-block;
-    float: right;
-    font-size: 100%;
-    font-weight: 300;
-    margin: 0 0 0 0 !important;
-    overflow: hidden;
-    position: absolute;
-    text-align: left;
-    user-select: none;
     width: 100%;
+    text-align: left;
+    position: absolute;
+    bottom: 100%;
+    pointer-events: none;
+    overflow: hidden;
+    padding: 0 1.25em;
 }
 
 .label-content {
-    position: relative;
-    display: block;
-    padding: 1.6em 0;
-    width: 100%;
+    color: #8B8C8B;
     padding: 0.25em 0;
+    -webkit-transition: -webkit-transform 0.3s;
     transition: transform 0.3s;
 }
 
@@ -421,7 +374,7 @@ table {
 .input-field:focus + .input-field,
 .input--filled .input-field {
     background-color: transparent;
-    border-color: #b9be32;
+    border-color: #a3d39c;
 }
 
 .input--hide {
