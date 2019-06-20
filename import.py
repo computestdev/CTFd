@@ -1,7 +1,9 @@
+"""
+python import.py export.zip
+"""
 from CTFd import create_app
-from CTFd.utils import import_ctf
+from CTFd.utils.exports import import_ctf
 
-import zipfile
 import sys
 
 app = create_app()

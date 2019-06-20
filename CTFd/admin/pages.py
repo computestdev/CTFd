@@ -1,96 +1,43 @@
-from flask import current_app as app, render_template, request, redirect, jsonify, url_for, Blueprint
-from CTFd.utils import admins_only, is_admin, cache
-from CTFd.models import db, Teams, Solves, Awards, Challenges, WrongKeys, Keys, Tags, Files, Tracking, Pages, Config, DatabaseError
+from flask import render_template, request
+from CTFd.utils.decorators import admins_only
+from CTFd.models import Pages
+from CTFd.schemas.pages import PageSchema
+from CTFd.utils import markdown
+from CTFd.admin import admin
 
-from CTFd import utils
 
-admin_pages = Blueprint('admin_pages', __name__)
-
-
-@admin_pages.route('/admin/css', methods=['GET', 'POST'])
+@admin.route('/admin/pages')
 @admins_only
-def admin_css():
-    if request.method == 'POST':
-        css = request.form['css']
-        css = utils.set_config('css', css)
-        with app.app_context():
-            cache.clear()
-        return '1'
-    return '0'
+def pages_listing():
+    pages = Pages.query.all()
+    return render_template('admin/pages.html', pages=pages)
 
 
-@admin_pages.route('/admin/pages', methods=['GET', 'POST'])
+@admin.route('/admin/pages/new')
 @admins_only
-def admin_pages_view():
-    route = request.args.get('route')
+def pages_new():
+    return render_template('admin/editor.html')
 
-    if request.method == 'GET' and request.args.get('mode') == 'create':
+
+@admin.route('/admin/pages/preview', methods=['POST'])
+@admins_only
+def pages_preview():
+    data = request.form.to_dict()
+    schema = PageSchema()
+    page = schema.load(data)
+    return render_template('page.html', content=markdown(page.data.content))
+
+
+@admin.route('/admin/pages/<int:page_id>')
+@admins_only
+def pages_detail(page_id):
+    page = Pages.query.filter_by(id=page_id).first_or_404()
+    page_op = request.args.get('operation')
+
+    if request.method == 'GET' and page_op == 'preview':
+        return render_template('page.html', content=markdown(page.content))
+
+    if request.method == 'GET' and page_op == 'create':
         return render_template('admin/editor.html')
 
-    if route and request.method == 'GET':
-        page = Pages.query.filter_by(route=route).first()
-        return render_template('admin/editor.html', page=page)
-
-    if request.method == 'POST':
-        html = request.form['html']
-        route = request.form['route'].lstrip('/')
-        page = Pages.query.filter_by(route=route).first()
-        errors = []
-        if not route:
-            errors.append('Missing URL route')
-        if errors:
-            page = Pages(html, route)
-            return render_template('/admin/editor.html', page=page)
-        if page:
-            page.route = route
-            page.html = html
-            db.session.commit()
-            db.session.close()
-            with app.app_context():
-                cache.clear()
-            return redirect(url_for('admin_pages.admin_pages_view'))
-        page = Pages(route, html)
-        db.session.add(page)
-        db.session.commit()
-        db.session.close()
-        with app.app_context():
-            cache.clear()
-        return redirect(url_for('admin_pages.admin_pages_view'))
-
-    pages = Pages.query.all()
-    return render_template('admin/pages.html', routes=pages, css=utils.get_config('css'))
-
-
-@admin_pages.route('/admin/pages/delete', methods=['POST'])
-@admins_only
-def delete_page():
-    route = request.form['route']
-    page = Pages.query.filter_by(route=route).first_or_404()
-    db.session.delete(page)
-    db.session.commit()
-    db.session.close()
-    with app.app_context():
-        cache.clear()
-    return '1'
-
-
-@admin_pages.route('/admin/media', methods=['GET', 'POST', 'DELETE'])
-@admins_only
-def admin_pages_media():
-    if request.method == 'POST':
-        files = request.files.getlist('files[]')
-
-        uploaded = []
-        for f in files:
-            data = utils.upload_file(file=f, chalid=None)
-            if data:
-                uploaded.append({'id': data[0], 'location': data[1]})
-        return jsonify({'results': uploaded})
-    elif request.method == 'DELETE':
-        file_ids = request.form.getlist('file_ids[]')
-        for file_id in file_ids:
-            utils.delete_file(file_id)
-        return True
-    else:
-        files = [{'id': f.id, 'location': f.location} for f in Files.query.filter_by(chal=None).all()]
-        return jsonify({'results': files})
+    return render_template('admin/editor.html', page=page)
