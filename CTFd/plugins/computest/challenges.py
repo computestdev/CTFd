@@ -13,7 +13,6 @@ from CTFd.models import (
     Challenges,
     Fails,
     Solves,
-    Teams,
     Users,
 )
 from CTFd.plugins import challenges
@@ -21,14 +20,14 @@ from CTFd.plugins import challenges
 
 MAIL_TEMPLATE_SOLVED = """Hello,
 
-User {user.name} (id: {user.id}) just SOLVED challenge {challenge.name} of category {challenge.category} with key '{provided}'.
+User {user.name} (id: {user.id}) just SOLVED challenge {challenge.name} of category {challenge.category} with key '{key}'.
 
 Regards,
 Computest Challenges
 """
 MAIL_TEMPLATE_FAILED = """Hello,
 
-User {user.name} (id: {user.id}) just FAILED challenge {challenge.name} of category {challenge.category} with key '{provided}'.
+User {user.name} (id: {user.id}) just FAILED challenge {challenge.name} of category {challenge.category} with key '{key}'.
 
 Regards,
 Computest Challenges
@@ -103,22 +102,18 @@ class NotifyingChallenge(challenges.CTFdStandardChallenge):
 
     @classmethod
     def send_notification(cls, solve):
-        if not isinstance(solve, (Fails, Solves)):
-            raise TypeError("expected a Solves or Fails instance")
-
         challenge = Challenges.query.get(solve.challenge_id)
-
-        if solve.team_id is None:
-            user = Users.query.get(solve.user_id)
-        else:
-            user = Teams.query.get(solve.team_id)
+        user = Users.query.get(solve.user_id)
 
         if isinstance(solve, Fails):
             cls.send_email(MAIL_TEMPLATE_FAILED.format(
-                provided=solve.provided, challenge=challenge, user=user))
+                key=solve.provided, challenge=challenge, user=user))
         elif isinstance(solve, Solves):
             cls.send_email(MAIL_TEMPLATE_SOLVED.format(
-                provided=solve.provided, challenge=challenge, user=user))
+                key=solve.provided, challenge=challenge, user=user))
+        else:
+            raise TypeError(
+                "expected a Solves or Fails instance, got {!r}".format(solve))
 
     @staticmethod
     def send_email(text):
