@@ -102,6 +102,10 @@ class NotifyingChallenge(challenges.CTFdStandardChallenge):
 
     @classmethod
     def send_notification(cls, solve):
+        if not isinstance(solve, (Fails, Solves)):
+            raise TypeError(
+                "expected a Solves or Fails instance, got {!r}".format(solve))
+
         challenge = Challenges.query.get(solve.challenge_id)
         user = Users.query.get(solve.user_id)
 
@@ -111,9 +115,6 @@ class NotifyingChallenge(challenges.CTFdStandardChallenge):
         elif isinstance(solve, Solves):
             cls.send_email(MAIL_TEMPLATE_SOLVED.format(
                 key=solve.provided, challenge=challenge, user=user))
-        else:
-            raise TypeError(
-                "expected a Solves or Fails instance, got {!r}".format(solve))
 
     @staticmethod
     def send_email(text):
