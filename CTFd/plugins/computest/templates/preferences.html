@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 
+{% block stylesheets %}
+{% endblock %}
+
 {% block content %}
 <div class="jumbotron">
     <div class="container">
@@ -8,14 +11,17 @@
 </div>
 <div class="container">
   <div class="row">
-    <div class="col-md-3">
+    <div class="col-md-3 offset-md-2">
         <ul class="nav nav-pills flex-column">
             <li class="nav-item">
-                <a class="nav-link rounded-0 active" href="#profile" role="tab" data-toggle="tab">Profile</a>
+                <a class="nav-link rounded-0" href="{{url_for('views.settings')}}">Settings</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link rounded-0 active" href="#preferences" role="tab" data-toggle="tab">Preferences</a>
             </li>
         </ul>
     </div>
-    <div class="col-md-9">
+    <div class="col-md-6">
         {% for error in errors %}
             <div class="alert alert-danger alert-dismissable" role="alert">
                 <span class="sr-only">Error:</span>
@@ -28,7 +34,7 @@
 
         <div class="tab-content">
 
-          <div role="tabpanel" class="tab-pane config-section active" id="profile">
+          <div role="tabpanel" class="tab-pane config-section active" id="preferences">
             <form id="user-settings-form" method="post" accept-charset="utf-8" autocomplete="off" role="form" class="form-horizontal">
               <input type="hidden" value="{{ nonce }}" name="nonce">
                 <div class="form-check">
