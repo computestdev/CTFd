@@ -55,10 +55,13 @@ class NotifyingChallenge(challenges.CTFdStandardChallenge):
     id = "notifying"
     name = "notifying"
     templates = {
-        # Copy of /plugins/challenges/assets/create.html but with "type" set to "notifying".
+        # Copy of /plugins/challenges/assets/create.html but with "type" set to
+        # "notifying".
         'create': '/plugins/computest/assets/create.html',
         'update': '/plugins/challenges/assets/update.html',
-        'view': '/plugins/challenges/assets/view.html',
+        # Copy of /plugins/challenges/assets/view.html but with "btn-primary"
+        # class for the submit button.
+        'view': '/plugins/computest/assets/view.html',
     }
     scripts = {
         'create': '/plugins/challenges/assets/create.js',

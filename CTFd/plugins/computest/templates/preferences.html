@@ -14,10 +14,10 @@
     <div class="col-md-3 offset-md-2">
         <ul class="nav nav-pills flex-column">
             <li class="nav-item">
-                <a class="nav-link rounded-0" href="{{url_for('views.settings')}}">Settings</a>
+                <a class="nav-link rounded-4" href="{{url_for('views.settings')}}">Settings</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link rounded-0 active" href="#preferences" role="tab" data-toggle="tab">Preferences</a>
+                <a class="nav-link rounded-4 active" href="#preferences" role="tab" data-toggle="tab">Preferences</a>
             </li>
         </ul>
     </div>
@@ -44,8 +44,8 @@
                     <small class="form-text text-muted">
                         Your {{account}} will be displayed on the
                         <a href="{{url_for('scoreboard.listing')}}">scoreboard</a> when checked.<br>
-                        Note that due to caching it may take up to a minute
-                        before your change will take effect.
+                        Note that due to caching it may take a minute for your
+                        change to take effect.
                     </small>
                   </label>
                 </div>
