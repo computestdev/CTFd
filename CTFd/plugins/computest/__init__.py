@@ -21,6 +21,7 @@ Customizations include:
       Computest theme).
     * Remove the OAuth button from the login form.
     * Add a "Register an account" link to the login form.
+    * Remove the OAuth button from the registration form.
 """
 
 from CTFd import plugins
