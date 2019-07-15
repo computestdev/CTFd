@@ -113,10 +113,15 @@ label {
     background-color: #E28C45;
     border: none;
 }
-
 .btn-primary:not(:disabled):not(.disabled).active,
 .btn-primary:not(:disabled):not(.disabled):active {
-    box-shadow: inset 0 3px 5px rgba(0,0,0,.125);
+    box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
+}
+.btn-primary.disabled,
+.btn-primary:disabled {
+    color: #FFFFFF;
+    background-color: rgba(0, 0, 0, 0.3);
+    border: none;
 }
 
 .btn.btn-dark.challenge-button {
