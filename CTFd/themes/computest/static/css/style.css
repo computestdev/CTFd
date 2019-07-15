@@ -142,3 +142,7 @@ label {
 .btn.btn-dark.challenge-button.solved-challenge:hover {
     opacity: 0.9;
 }
+
+img.rounded {
+    border-radius: 5px;
+}
