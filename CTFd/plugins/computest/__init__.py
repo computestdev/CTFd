@@ -14,10 +14,13 @@ Customizations include:
     * A custom "notifying" challenge type, which sends an email notification of
       every solve attempt. The email address to which notifications should be
       sent can be configured from the admin panel.
-
-TODO:
-
-    * Only display non-hidden teams/users on the scoreboard graph.
+    * Only display non-hidden teams/users on the scoreboard graph. This is
+      partially implemented by overriding the core standings function because
+      the APIs can't be overridden using a plugin.
+    * Link to the Preferences page from Settings page (implemented in the
+      Computest theme).
+    * Remove the OAuth button from the login form.
+    * Add a "Register an account" link to the login form.
 """
 
 from CTFd import plugins

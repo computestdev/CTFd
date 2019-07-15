@@ -20,11 +20,6 @@
 				</div>
 			{% endfor %}
 
-			<a class="btn btn-secondary btn-lg btn-block" href="{{ url_for('auth.oauth_login') }}">Login with Major
-				League Cyber</a>
-
-			<hr>
-
 			<form method="post" accept-charset="utf-8" autocomplete="off" role="form" class="form-horizontal">
 				<div class="form-group">
 					<label for="name-input">
@@ -42,6 +37,10 @@
 					<div class="col-md-6">
 						<a class="float-left align-text-to-button" href="{{ url_for('auth.reset_password') }}">
 							Forgot your password?
+						</a>
+						<br>
+						<a class="float-left align-text-to-button" href="{{ url_for('auth.register') }}">
+							Register an account
 						</a>
 					</div>
 					<div class="col-md-6">
