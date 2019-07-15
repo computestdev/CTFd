@@ -46,6 +46,15 @@ label {
     font-weight: 300;
 }
 
+code {
+    background-color: rgba(27,31,35,.05);
+    border-radius: 3px;
+    color: #212529;
+    font-size: 85%;
+    margin: 0;
+    padding: .2em .4em;
+}
+
 .nav-pills .nav-link.active,
 .nav-pills .show > .nav-link {
     color: #FFFFFF;
